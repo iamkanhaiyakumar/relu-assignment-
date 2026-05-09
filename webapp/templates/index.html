@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nike PH Products — Relu Consultancy Challenge</title>
+    <meta name="description" content="Scraped Nike Philippines product data displayed in a premium dashboard.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- ─── Header ──────────────────────────────────────────── -->
+    <header class="header">
+        <div class="container">
+            <div class="header__brand">
+                <svg class="header__logo" viewBox="0 0 69 32" fill="currentColor">
+                    <path d="M68.56 4.05c-5.28 4.48-17.94 14.28-27.66 19.23-5.24 2.67-9.56 3.89-13.24 3.89-5.56 0-8.94-3.08-8.94-7.81 0-6.06 5.14-9.75 15.03-9.75 3.22 0 6.82.45 10.2 1.26l-1.57-5.52C38.41 4.01 34.1 3.3 29.68 3.3 14.22 3.3 4.5 9.9 4.5 20.16c0 7.22 5.34 11.84 13.6 11.84 5.42 0 10.94-1.72 17.68-5.6C44.78 22.16 57.64 12.16 63.5 7.3l5.06-3.25z"/>
+                </svg>
+                <h1 class="header__title">Product Dashboard</h1>
+            </div>
+            <p class="header__subtitle">Nike PH — Data Extraction Challenge by Relu Consultancy</p>
+        </div>
+    </header>
+
+    <!-- ─── Stats Cards ─────────────────────────────────────── -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card stat-card--total">
+                    <div class="stat-card__icon">📦</div>
+                    <div class="stat-card__value">{{ stats.total }}</div>
+                    <div class="stat-card__label">Total Products</div>
+                </div>
+                <div class="stat-card stat-card--price">
+                    <div class="stat-card__icon">💰</div>
+                    <div class="stat-card__value">{{ stats.avg_price }}</div>
+                    <div class="stat-card__label">Avg Discount Price</div>
+                </div>
+                <div class="stat-card stat-card--max">
+                    <div class="stat-card__icon">🏷️</div>
+                    <div class="stat-card__value">{{ stats.max_price }}</div>
+                    <div class="stat-card__label">Highest Price</div>
+                </div>
+                <div class="stat-card stat-card--rated">
+                    <div class="stat-card__icon">⭐</div>
+                    <div class="stat-card__value">{{ stats.with_rating }}</div>
+                    <div class="stat-card__label">Rated Products</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Tab Navigation ──────────────────────────────────── -->
+    <nav class="tabs-nav">
+        <div class="container">
+            <button class="tab-btn active" data-tab="all-products">All Products</button>
+            <button class="tab-btn" data-tab="top10-expensive">Top 10 Expensive</button>
+            <button class="tab-btn" data-tab="top20-rated">Top 20 Rated</button>
+        </div>
+    </nav>
+
+    <!-- ─── All Products Tab ────────────────────────────────── -->
+    <section id="all-products" class="tab-content active">
+        <div class="container">
+            <div class="toolbar">
+                <div class="search-box">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Search products..." class="search-input">
+                </div>
+                <span class="result-count" id="resultCount">Showing {{ products|length }} products</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th class="th-idx">#</th>
+                            <th class="th-image">Image</th>
+                            <th class="th-name sortable" data-sort="name">Product Name ↕</th>
+                            <th class="th-tag">Tagging</th>
+                            <th class="th-desc">Description</th>
+                            <th class="th-price sortable" data-sort="original">Original</th>
+                            <th class="th-price sortable" data-sort="discount">Discount</th>
+                            <th class="th-colors">Colors</th>
+                            <th class="th-style">Style Code</th>
+                            <th class="th-rating sortable" data-sort="rating">Rating ↕</th>
+                            <th class="th-reviews sortable" data-sort="reviews">Reviews ↕</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                        <tr class="product-row"
+                            data-name="{{ p.Product_Name|lower if p.Product_Name else '' }}"
+                            data-tag="{{ p.Product_Tagging|lower if p.Product_Tagging else '' }}"
+                            data-desc="{{ p.Product_Description|lower if p.Product_Description else '' }}">
+                            <td class="td-idx">{{ loop.index }}</td>
+                            <td class="td-image">
+                                {% if p.Product_Image_URL %}
+                                <img src="{{ p.Product_Image_URL }}" alt="{{ p.Product_Name }}" loading="lazy" class="product-thumb">
+                                {% else %}
+                                <div class="no-image">No Image</div>
+                                {% endif %}
+                            </td>
+                            <td class="td-name">
+                                <a href="{{ p.Product_URL }}" target="_blank" rel="noopener" class="product-link">
+                                    {{ p.Product_Name }}
+                                </a>
+                            </td>
+                            <td class="td-tag"><span class="badge">{{ p.Product_Tagging }}</span></td>
+                            <td class="td-desc">{{ p.Product_Description }}</td>
+                            <td class="td-price">{{ p.Original_Price }}</td>
+                            <td class="td-price td-discount">{{ p.Discount_Price }}</td>
+                            <td class="td-colors">{{ p.Available_Colors }}</td>
+                            <td class="td-style"><code>{{ p.Style_Code }}</code></td>
+                            <td class="td-rating">{{ p.Rating_Score }}</td>
+                            <td class="td-reviews">{{ p.Review_Count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Top 10 Expensive Tab ────────────────────────────── -->
+    <section id="top10-expensive" class="tab-content">
+        <div class="container">
+            <h2 class="section-title">🏆 Top 10 Most Expensive Products</h2>
+            <p class="section-desc">Sorted by Discount Price (descending)</p>
+            <div class="cards-grid">
+                {% for p in top10 %}
+                <div class="product-card">
+                    <div class="product-card__rank">#{{ loop.index }}</div>
+                    {% if p.Product_Image_URL %}
+                    <img src="{{ p.Product_Image_URL }}" alt="{{ p.Product_Name }}" class="product-card__img" loading="lazy">
+                    {% endif %}
+                    <div class="product-card__body">
+                        <h3 class="product-card__name">{{ p.Product_Name }}</h3>
+                        <p class="product-card__desc">{{ p.Product_Description }}</p>
+                        <div class="product-card__prices">
+                            <span class="price-discount">{{ p.Discount_Price }}</span>
+                            <span class="price-original">{{ p.Original_Price }}</span>
+                        </div>
+                        <a href="{{ p.Product_URL }}" target="_blank" class="product-card__link">View on Nike →</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Top 20 Rated Tab ────────────────────────────────── -->
+    <section id="top20-rated" class="tab-content">
+        <div class="container">
+            <h2 class="section-title">⭐ Top 20 Products by Rating & Reviews</h2>
+            <p class="section-desc">Eligibility: Review Count &gt; 150 | Ranked by Rating, then Review Count</p>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Product Name</th>
+                            <th>Description</th>
+                            <th>Tagging</th>
+                            <th>Discount Price</th>
+                            <th>Rating</th>
+                            <th>Reviews</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in top20 %}
+                        <tr>
+                            <td><strong>{{ p.Rank }}</strong></td>
+                            <td>{{ p.Product_Name }}</td>
+                            <td>{{ p.Product_Description }}</td>
+                            <td><span class="badge">{{ p.Product_Tagging }}</span></td>
+                            <td class="td-discount">{{ p.Discount_Price }}</td>
+                            <td>⭐ {{ p.Rating_Score }}</td>
+                            <td>{{ p.Review_Count }}</td>
+                            <td><a href="{{ p.Product_URL }}" target="_blank" class="product-card__link">View →</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Footer ──────────────────────────────────────────── -->
+    <footer class="footer">
+        <div class="container">
+            <p>Nike PH Product Scraper — Relu Consultancy Hiring Challenge</p>
+            <p class="footer__sub">Built with Python, Playwright, Flask & ❤️</p>
+        </div>
+    </footer>
+
+    <script>
+        // ─── Tab switching ──────────────────────────────────────
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ─── Search / Filter ────────────────────────────────────
+        const searchInput = document.getElementById('searchInput');
+        const resultCount = document.getElementById('resultCount');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const q = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('.product-row');
+                let visible = 0;
+                rows.forEach(row => {
+                    const name = row.dataset.name || '';
+                    const tag = row.dataset.tag || '';
+                    const desc = row.dataset.desc || '';
+                    const match = name.includes(q) || tag.includes(q) || desc.includes(q);
+                    row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+                resultCount.textContent = `Showing ${visible} products`;
+            });
+        }
+    </script>
+</body>
+</html>
